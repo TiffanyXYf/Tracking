@@ -1,0 +1,25 @@
+function [ cmin, cmax, rmin, rmax ] = select( I )
+%UNTITLED1 Summary of this function goes here
+%  Detailed explanation goes here
+
+
+% for array... x is cols, y is rows
+image(I);
+k = waitforbuttonpress;
+point1 = get(gca,'CurrentPoint');  %mouse pressed
+rectregion = rbbox;  
+point2 = get(gca,'CurrentPoint');
+point1 = point1(1,1:2);              % extract col/row min and maxs
+point2 = point2(1,1:2);
+lowerleft = min(point1, point2);
+upperright = max(point1, point2);
+cmin = round(lowerleft(1));
+cmax = round(upperright(1));
+rmin = round(lowerleft(2));
+rmax = round(upperright(2));
+
+
+
+%rect = getrect(); 
+%x1 = rect(2); x2 = rect(2) + rect(4); 
+%y1 = rect(1); y2 = rect(1) + rect(3); 
