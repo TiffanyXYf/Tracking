@@ -1,25 +1,19 @@
-function [sampleset,after_prop]=myreproduce(sampleset,...
-    vx,vy,bound_x,bound_y,I,N,sigma_x,sigma_y,runtime)
-%This function is used to reproduce particles for our system
-%the particles depend on vx and xy the velocity of the first three frame of
-%the video
-after_prop=I;
+function [sampleset,after_prop]=im_reproduce(sampleset,...
+    bound_x,bound_y,I,N,sigma_x,sigma_y)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function:  粒子的位置进行一次更新，并且输出到画布中
+%            相对于图像，不需要做过多的位置平移（）
+% input:     粒子位置，画布边界，图像，x,y坐标的更新的方差（随机性的大小）、"进行迭代的次数"
+% output:    粒子的新位置、包含输出粒子的图像
+% author:    Cuifang
+% date:      2019 April 4th
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if runtime ==1
-    pvx=vx(3);
-    pvy=vy(3);
-elseif runtime ==2
-    pvx = (vx(2)+vx(3))/2;
-    pvy = (vy(2)+vy(3))/2;
-else
-     pvx = mean(vx);
-     pvy = mean(vy);
-end
-% pvx = 0;
-% pvy = 0;
+after_prop=I;% I 是输入的image
+
 % Here a question: why 10*N?
-randx = random('Normal',pvx,sigma_x,1,10*N);
-randy = random('Normal',pvy,sigma_y,1,10*N);
+randx = random('Normal',0,sigma_x,1,10*N);
+randy = random('Normal',0,sigma_y,1,10*N);
 
 
 for i = 1:N

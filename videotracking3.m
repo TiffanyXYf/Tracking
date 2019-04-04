@@ -15,7 +15,8 @@ new_sita = 0.2;
 %（new_sita）^2表示颜色信息的高斯分布方差。
 vx=[0,0,0];
 vy=[0,0,0];
-%得出目标的移动速度
+% 得出目标的移动速度，如何应对目标方向发生突变的情况？
+% 速度向上向左得到的平均速度
 runtime=0;%求取目标速度的时候用
 %产生随机粒子的方差
 sigma_x=3.5;
@@ -53,6 +54,8 @@ num_frames = length(Frame);
 centre_x =round((cmax+cmin)/2);
 centre_y =round((rmin+rmax)/2) ;                   %在矩阵中x表示列，y表示行
 %得到描述目标轮廓的椭圆的长短半轴的平方
+% Hx = ((cmax-cmin)/3)^2;                    %round()四舍五入取整
+% Hy = ((rmax-rmin)/3)^2;
 Hx = ((cmax-cmin)/3)^2;                    %round()四舍五入取整
 Hy = ((rmax-rmin)/3)^2;
 bound_x = image_size(2);

@@ -7,6 +7,7 @@ for i=1:N
     Sample_histgram(i,:)=histgram((Sample_Set(i).x),(Sample_Set(i).y),Hx,Hy,H,S,V,image_boundary_x,image_boundary_y,v_count); 
     %求每一个粒子确定的候选模板在HSV空间的颜色直方图
     New_Sample_probability(i)=Sample_probability(i)*weight(target_histgram,Sample_histgram(i,:),new_sita,v_count);
+% New_Sample_probability(i)=weight(target_histgram,Sample_histgram(i,:),new_sita,v_count);
     %目的是为了归一化
     Total_probability=Total_probability+New_Sample_probability(i);
 end

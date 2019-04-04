@@ -5,18 +5,18 @@ function [sampleset,after_prop]=myreproduce(sampleset,...
 %the video
 after_prop=I;
 
-if runtime ==1
-    pvx=vx(3);
-    pvy=vy(3);
-elseif runtime ==2
-    pvx = (vx(2)+vx(3))/2;
-    pvy = (vy(2)+vy(3))/2;
-else
-     pvx = mean(vx);
-     pvy = mean(vy);
-end
-% pvx = 0;
-% pvy = 0;
+% if runtime ==1
+%     pvx=vx(3);
+%     pvy=vy(3);
+% elseif runtime ==2
+%     pvx = (vx(2)+vx(3))/2;
+%     pvy = (vy(2)+vy(3))/2;
+% else
+%      pvx = mean(vx);
+%      pvy = mean(vy);
+% end
+pvx = 0;
+pvy = 0;
 % Here a question: why 10*N?
 randx = random('Normal',pvx,sigma_x,1,10*N);
 randy = random('Normal',pvy,sigma_y,1,10*N);

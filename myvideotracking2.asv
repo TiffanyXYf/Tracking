@@ -76,7 +76,7 @@ for t = 2:num_frames
     image = Frame{t};
     [H,S,V] = rgb_to_rank(image);%计算当前帧的HSV空间
      %产生随机粒子，根据随机情况更新粒子的位置，粒子边界的判定
-    [Sample_Set,after_prop] = reproduce(Sample_Set,vx,vy,bound_x,bound_y,...
+    [Sample_Set,after_prop]= reproduce(Sample_Set,vx,vy,bound_x,bound_y,...
         image,N,sigma_x,sigma_y,runtime);
     %输出：位置随系统随机更新的粒子，以及包含各个粒子位置的图像。
     
@@ -99,12 +99,9 @@ for t = 2:num_frames
      end
     mean_probability;
     Estimate(t).probability;
-    
     if(Estimate(t).probability>mean_probability)
     [target_histgram,pre_probability]=update_target(target_histgram,Sample_histgram,...
         Sample_probability,pre_probability,Estimate,N,v_count,t,resample_judge);
-    
-    
    %不进行模板更新，但是要对pre_probability进行更新操作
     else if(t>10)
         for k=1:9

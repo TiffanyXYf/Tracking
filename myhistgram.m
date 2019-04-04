@@ -7,6 +7,7 @@ e = round((Hx)^0.5);
 f = round((Hy)^0.5);
 pqu = zeros(1,v_count);
 q = 0;
+% 构成以（x,y）为中心的相对于原点平移的椭圆
 for i = (x-e):(x+e)
     for j = (y-f):(y+f)
         if (x-i)^2/Hx+(y-j)^2/Hy <=1 && i>= 1&& i<= bound_x&& j>=1&& j<=bound_y
