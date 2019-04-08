@@ -1,13 +1,13 @@
-clc
-clear 
-close all
+% clc
+% clear 
+% close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%用粒子滤波器完成视觉目标跟踪
-%Cuifang
-%2019 2 28
+% 结合粒子滤波思想完成快速模板匹配
+% Cuifang
+% 2019 4 8
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 初始化：参数，跟踪视频读入
-N = 500;                                    %粒子数
+N = 100;                                    %粒子数
 v_count = 193;%HSV颜色分量变成一维向量的大小
 new_sita = 0.2;
 
@@ -20,11 +20,6 @@ runtime=0;%求取目标速度的时候用
 sigma_x=3.5;
 sigma_y=3.5;
 
-
-
-% noise = 25;
-% noise2 = 5;
-% sigma_n = 1;
 iamges = VideoReader('SampleVideo.WMV');
 % iamges = VideoReader('industry.MP4');
 num_frames =  get(iamges, 'NumberOfFrames');
@@ -39,6 +34,8 @@ end
 Frame = {mov.cdata}; %将所有的帧数据都保存在Frame中
 %% 初始化：得到模板的特征（颜色直方图）
 template = imread('template2.jpg');
+% template = imread('badtemplate.jpg');
+% template = imread('template_in.jpg');
 [bound_y,bound_x] = size(template(:,:,1));
 [H, S, V]=rgb_to_rank(template);
 Hx = (bound_x/2)^2;
@@ -47,32 +44,45 @@ x = round(bound_x/2);
 y = round(bound_y/2); % 模板图片的中心坐标
 target_histgram = myin_histgram(x,y,Hx,Hy,H,S,V,bound_x,bound_y,v_count);
 %% 粒子的初始化：粒子的位置、权重、第一次估计
+
+% 下面是用于视频的情况下：
+% bound_x = image_size(2);
+% bound_y = image_size(1);
+% [H,S,V] = rgb_to_rank(Frame{1});
+% image = Frame{1}; % 选择特定的图片 
+
+
+image = imread('ShetlerFamily06.jpg');
 bound_x = image_size(2);
 bound_y = image_size(1);
-[H,S,V] = rgb_to_rank(Frame{1});
+[H,S,V] = rgb_to_rank(image);
+
 [Sample_Set,Sample_probability,Estimate] = myin_particles(Hx,Hy,H,S,V,...
     bound_x,bound_y,N,v_count,new_sita,target_histgram);
+
 % 初始化粒子，估计，和第一帧图像的颜色直方图
-
-
 % pre_probability 是否需要？
-pre_probability(1)=Estimate(1).probability; % 参数pre_probability 是用于判断模板是否需要更新的参数。
+% pre_probability(1)=Estimate(1).probability; % 参数pre_probability 是用于判断模板是否需要更新的参数。
 % 这个参数用于计算一个meanprobability，然后通过与当前估计的estimate-probability进行比较，
 % 如果当前的估计距离更近，说明模板可以更新了。（说明已经很接近了，如果接近到一定程度了，就可以代替原来的
 % 模板了，因为原来的模板可能与当前的背景不同，背景会对颜色直方图产生影响）
 
-%% 粒子传播，系统观测，目标状态估计，重采样，目标模板更新
+%% 对于图像的：粒子传播，系统观测，目标状态估计，重采样，目标模板更新
 
 set(gcf,'DoubleBuffer','on');                 % 设置双缓冲,防止屏幕闪烁
-figure(1);hold on;
-imshow(Frame{1});
+% figure(1);hold on;
+% imshow(Frame{1});
 % resample_judge=0; % 判断是否重采样的标志
 % 确定每次计算完成之后都进行重采样的操作。
 % 对于每一张图片都进行确定次数的迭代，使其收敛到图片中与模板最接近的位置。
 % 有一个未考虑的问题：如何在第一开始就确定图片中有没有模板对应的相似的东西？？？？？
-Iteration = 5;
-image = Frame{2}; % 选择特定的图片 
-[H,S,V] = rgb_to_rank(image); % 计算当前帧的HSV 
+Iteration = 8;
+
+% image = Frame{1}; % 选择特定的图片 
+% image = imread('ShetlerFamily06.jpg');
+
+
+[H,S,V] = rgb_to_rank(image); %计算当前帧的HSV 
 for i = 1:Iteration % 粒子滤波迭代求收敛位置
     % 计算粒子位置更新的情况()空间
     [Sample_Set,after_prop]=im_reproduce(Sample_Set,...
@@ -81,103 +91,16 @@ for i = 1:Iteration % 粒子滤波迭代求收敛位置
     [Sample_Set,Sample_probability, Estimate,TargetPic,sample_histgram] = ...
              im_evaluate(Sample_Set,Estimate,target_histgram,new_sita,i,...
              after_prop,H,S,V,N,bound_x,bound_y,v_count,Hx,Hy,Sample_probability);
+    
 end
 
-% show
+
+%% show result
+imshow(TargetPic)
+title([num2str(N),' sampled points ',num2str(Iteration),' iteration'])
 
 
 
-
-% 
-% for t = 2:num_frames
-%     image = Frame{t};
-%     [H,S,V] = rgb_to_rank(image);%计算当前帧的HSV空间
-%      %产生随机粒子，根据随机情况更新粒子的位置，粒子边界的判定
-%     [Sample_Set,after_prop]=myreproduce(Sample_Set,vx,vy,bound_x,bound_y,...
-%         image,N,sigma_x,sigma_y,runtime);
-%     %输出：位置随系统随机更新的粒子，以及包含各个粒子位置的图像。
-%     
-%     %得出被跟踪目标的在当前帧的预测位置。计算每一个粒子的颜色直方图
-%     [Sample_probability,Estimate,vx,vy,TargetPic,Sample_histgram] = myevaluate(Sample_Set,...
-%         Estimate,target_histgram,new_sita,t,after_prop,H,S,V,N,bound_x,bound_y,v_count,vx,vy,Hx,Hy,Sample_probability);
-%     %输出：粒子的权重（通过计算粒子与目标的距离更新后的），目标的估计值（其中包含估计坐标，估计值所在位置对应的直方图，
-%     %      以及当前位置与目标之间的距离计算出来的权重），目标的运动速度估计（用于当做系统的状态的参数）
-%     %      包含目标轮廓的图，各个粒子的直方图。
-%     
-%     %模板更新时和重采用判断时，都要用到归一化的权值Sample_probability
-%      if(t<=10) %前10帧属于特殊情况，需要额外进行处理
-%         sum_probability=0;
-%         for p=1:t-1
-%             sum_probability=sum_probability+pre_probability(p);
-%         end 
-%         mean_probability=sum_probability/(t-1);
-%      else %直接求取均值
-%         mean_probability=mean(pre_probability);
-%      end
-%     mean_probability;
-%     Estimate(t).probability;
-%     if(Estimate(t).probability>mean_probability)
-%     [target_histgram,pre_probability]=update_target(target_histgram,Sample_histgram,...
-%         Sample_probability,pre_probability,Estimate,N,v_count,t,resample_judge);
-%    %不进行模板更新，但是要对pre_probability进行更新操作
-%     else if(t>10)
-%         for k=1:9
-%             pre_probability(k)=pre_probability(k+1);
-%         end
-%         pre_probability(10)=Estimate(t).probability;
-%         else 
-%             pre_probability(t)=Estimate(t).probability;
-%         end
-%     end
-%      resample_judge=0;
-%       %判断是否需要重采样
-%     back_sum_weight=0;
-%     for judge=1:N
-%         back_sum_weight=back_sum_weight+(Sample_probability(judge))^2;
-%     end
-%     sum_weight=1/back_sum_weight;
-%     if(sum_weight<N/2)
-%         %重采样过程
-%         usetimes=reselect(Sample_Set,Sample_probability,N);
-%         [Sample_Set,Sample_probability] = assemble(Sample_Set,usetimes,Sample_probability,N);%进行线性组合
-%         resample_judge=1;
-%     end
-%     
-%      %得到目标运动的轨迹
-%     if(t==2)
-%         routine.x=round(Estimate(t).x);
-%         routine.y=round(Estimate(t).y);
-%     else
-%         routine(t-1).x=round(Estimate(t).x);
-%         routine(t-1).y=round(Estimate(t).y);
-%     end
-%     i=1;
-%     j=1;
-%     while(j<=t-1)
-%         for new_x = routine(j).x-i:routine(j).x+i
-%            for new_y=routine(j).y:routine(j).y+i
-%                 TargetPic(new_y,new_x,1)=0;
-%                 TargetPic(new_y,new_x,2)=0;
-%                 TargetPic(new_y,new_x,3)=255;
-%            end
-%         end   
-%         j=j+1;
-%     end 
-% %画出每一帧图像中跟踪目标的预测中心点
-% i=1;
-% for new_x=round(Estimate(t).x)-i:round(Estimate(t).x+i)
-%        for new_y=round(Estimate(t).y)-i:round(Estimate(t).y+i)
-%           TargetPic(new_y,new_x,1)=255;
-%           TargetPic(new_y,new_x,2)=255;
-%           TargetPic(new_y,new_x,3)=255;
-%        end
-% end
-% 
-%      imshow(TargetPic);
-%      F = getframe;
-%      title(['the ',num2str(t),'th frame']);
-% 
-% end
 
 
 

@@ -1,0 +1,9 @@
+
+testtime = 10;
+togglefig('figure1')
+for i = 1:testtime
+    industryparticle;    
+    subplot(2,5,i)
+    imshow(TargetPic)
+    title([num2str(N),' sampled points ',num2str(Iteration),' iteration'])
+end
